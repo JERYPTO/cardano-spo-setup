@@ -6,15 +6,10 @@ cardano-cli stake-address registration-certificate \
     --out-file ${NODE_HOT}/stake.cert
 
 # producer ########################################################
-currentSlot=$(cardano-cli query tip ${NODE_NETWORK} | jq -r '.slot')
-echo Current Slot: $currentSlot
-
 cardano-cli query utxo \
     --address $(cat ${NODE_HOT}/payment.addr) \
     ${NODE_NETWORK} > ${NODE_TMP}/fullUtxo.out
-
 tail -n +3 ${NODE_TMP}/fullUtxo.out | sort -k3 -nr > ${NODE_TMP}/balance.out
-
 tx_in=""
 total_balance=0
 while read -r utxo; do
@@ -22,19 +17,13 @@ while read -r utxo; do
     idx=$(awk '{ print $2 }' <<< "${utxo}")
     utxo_balance=$(awk '{ print $3 }' <<< "${utxo}")
     total_balance=$((${total_balance}+${utxo_balance}))
-    echo TxHash: ${in_addr}#${idx}
-    echo ADA: ${utxo_balance}
     tx_in="${tx_in} --tx-in ${in_addr}#${idx}"
-    echo TxIn: ${tx_in}
 done < ${NODE_TMP}/balance.out
 txcnt=$(cat ${NODE_TMP}/balance.out | wc -l)
-echo Total ADA balance: ${total_balance}
-echo Number of UTXOs: ${txcnt}
 
-# The "stakeAddressDeposit" parameter represents the minimum deposit required to register a new stake pool on the Cardano blockchain.
+# stakeAddressDeposit: minimum deposit required to register a new stake pool on the Cardano blockchain
 stakeAddressDeposit=$(cat ${NODE_ENVIRON}/params.json | jq -r '.stakeAddressDeposit')
-echo stakeAddressDeposit : $stakeAddressDeposit
-
+currentSlot=$(cardano-cli query tip ${NODE_NETWORK} | jq -r '.slot')
 cardano-cli transaction build-raw \
     ${tx_in} \
     --tx-out $(cat ${NODE_HOT}/payment.addr)+0 \
@@ -42,7 +31,6 @@ cardano-cli transaction build-raw \
     --fee 0 \
     --certificate ${NODE_HOT}/stake.cert \
     --out-file ${NODE_TMP}/tx.raw
-
 fee=$(cardano-cli transaction calculate-min-fee \
     --tx-body-file ${NODE_TMP}/tx.raw \
     --tx-in-count ${txcnt} \
@@ -50,11 +38,7 @@ fee=$(cardano-cli transaction calculate-min-fee \
     --witness-count 2 \
     ${NODE_NETWORK} \
     --protocol-params-file ${NODE_ENVIRON}/params.json | awk '{ print $1 }')
-echo fee: $fee
-
 txOut=$((${total_balance}-${stakeAddressDeposit}-${fee}))
-echo Change Output: ${txOut}
-
 cardano-cli transaction build-raw \
     ${tx_in} \
     --tx-out $(cat ${NODE_HOT}/payment.addr)+${txOut} \

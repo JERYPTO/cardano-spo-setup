@@ -41,7 +41,6 @@ cardano-cli node key-gen-VRF \
     --signing-key-file ${NODE_HOT}/vrf.skey
 chmod 400 ${NODE_HOT}/vrf.skey
 
-
 # producer ########################################################
 # Block: a block is a collection of transactions that have been verified and added to the blockchain. 
 # Each block contains a list of transactions, a reference to the previous block (also known as the "parent block"), and other information such as a timestamp and a block number.
@@ -56,15 +55,10 @@ chmod 400 ${NODE_HOT}/vrf.skey
 
 # the number of slots per KES period from the genesis file.
 slotsPerKESPeriod=$(cat ${NODE_ENVIRON}/shelley-genesis.json | jq -r '.slotsPerKESPeriod')
-echo slotsPerKESPeriod: ${slotsPerKESPeriod}
-
 # Current slot number
 slotNo=$(cardano-cli query tip ${NODE_NETWORK} | jq -r '.slot')
-echo slotNo: ${slotNo}
-
 # how many KES period have passed since the genesis of the blockchain
 kesPeriod=$((${slotNo} / ${slotsPerKESPeriod}))
-echo kesPeriod: ${kesPeriod}
 
 # air-gapped #####################################################
 # generate an operational certificate for a node on the Cardano blockchain. 
@@ -75,7 +69,6 @@ cardano-cli node issue-op-cert \
     --operational-certificate-issue-counter ${NODE_COLD}/node.counter \
     --kes-period ${kesPeriod} \
     --out-file ${NODE_HOT}/node.cert
-
 
 # producer ########################################################
 sudo systemctl stop cardano-node

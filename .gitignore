@@ -2,4 +2,6 @@ logo.png
 testPoolMetaData.json
 jerypto.zip
 _send.sh
+_newCertificate.sh
+_node_exporter.sh
 poolMetaData.json

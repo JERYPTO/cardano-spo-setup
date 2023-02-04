@@ -27,16 +27,9 @@ After             = network-online.target
   
 [Service]
 User              = ${USER}
-Type              = simple
-WorkingDirectory  = ${NODE_HOME}
 ExecStart         = /bin/bash -c '${NODE_HOME}/startCardanoNode.sh'
-KillSignal        = SIGINT
-RestartKillSignal = SIGINT
-TimeoutStopSec    = 300
-LimitNOFILE       = 32768
 Restart           = always
-RestartSec        = 5
-SyslogIdentifier  = cardano-node  
+RestartSec        = 10
   
 [Install]
 WantedBy          = multi-user.target

@@ -6,7 +6,6 @@ cardano-cli query protocol-parameters \
     ${NODE_NETWORK} \
     --out-file ${NODE_ENVIRON}/params.json
 
-
 # air-gapped #####################################################
 # These keys can be used to send and receive transactions on the Cardano blockchain.
 cardano-cli address key-gen \
